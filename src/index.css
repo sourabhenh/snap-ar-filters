@@ -74,6 +74,7 @@ body {
 }
 
 /* Camera Canvas */
+/* Camera Canvas */
 .camera-canvas {
   width: 337.5px;
   height: 600px;
@@ -83,6 +84,15 @@ body {
   object-fit: cover;
   border-radius: 10px;
   aspect-ratio: 9 / 16;
+}
+
+/* Add mobile optimization */
+@media (max-width: 480px) {
+  .camera-canvas {
+    width: 270px;
+    height: 480px;
+    max-height: calc(100vh - 180px);
+  }
 }
 
 /* Video Container */

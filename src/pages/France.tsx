@@ -1,13 +1,15 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { bootstrapCameraKit, createMediaStreamSource } from "@snap/camera-kit";
 
-export default function Argentina() {
+export default function France() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const startButtonRef = useRef<HTMLButtonElement>(null);
   const stopButtonRef = useRef<HTMLButtonElement>(null);
   const downloadButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [isLoading, setIsLoading] = useState(true);
 
   let mediaRecorder: MediaRecorder;
   let downloadUrl: string;
@@ -27,9 +29,10 @@ export default function Argentina() {
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: 640 },
+          height: { ideal: 480 },
           facingMode: "user",
+          frameRate: { ideal: 30, max: 30 },
         },
       });
 
@@ -44,10 +47,12 @@ export default function Argentina() {
 
       if (!lenses || lenses.length === 0) {
         console.error("No lenses found in the group");
+        setIsLoading(false);
         return;
       }
 
-      session.applyLens(lenses[1]); // Using second lens for Argentina
+      session.applyLens(lenses[0]);
+      setIsLoading(false);
 
       bindRecorder();
     }
@@ -109,7 +114,7 @@ export default function Argentina() {
 
         link.setAttribute("style", "display: none");
         link.href = downloadUrl;
-        link.download = "argentina-camera-kit-recording.webm";
+        link.download = "france-camera-kit-recording.webm";
         link.click();
         link.remove();
       });
@@ -120,7 +125,21 @@ export default function Argentina() {
 
   return (
     <div className="camera-page">
-      <h1 className="page-title">France Team</h1>
+      <h1 className="page-title">France</h1>
+
+      {isLoading && (
+        <div
+          style={{
+            position: "absolute",
+            color: "white",
+            fontSize: "18px",
+            textAlign: "center",
+            zIndex: 100,
+          }}
+        >
+          Loading Camera Kit...
+        </div>
+      )}
 
       <canvas ref={canvasRef} className="camera-canvas"></canvas>
 
