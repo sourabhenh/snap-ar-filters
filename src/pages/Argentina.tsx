@@ -46,9 +46,7 @@ export default function Argentina() {
         },
       });
 
-      const source = createMediaStreamSource(mediaStream);
-
-      await session.setSource(source);
+      await session.setSource(createMediaStreamSource(mediaStream));
       await session.play();
 
       setLoadingMessage("Loading AR lenses...");
@@ -68,7 +66,7 @@ export default function Argentina() {
 
       setLoadingMessage("Applying filter...");
 
-      await session.applyLens(lenses[1]); // Using second lens for Argentina
+      await session.applyLens(lenses[1]);
 
       setIsLoading(false);
 

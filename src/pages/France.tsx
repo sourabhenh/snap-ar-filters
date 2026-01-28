@@ -46,9 +46,7 @@ export default function France() {
         },
       });
 
-      const source = createMediaStreamSource(mediaStream);
-
-      await session.setSource(source);
+      await session.setSource(createMediaStreamSource(mediaStream));
       await session.play();
 
       setLoadingMessage("Loading AR lenses...");
