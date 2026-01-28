@@ -79,7 +79,7 @@ body {
   display: block;
   object-fit: cover;
   border-radius: 10px;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 12 / 16;
 }
 
 /* Video Container */
