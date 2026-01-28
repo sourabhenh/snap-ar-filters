@@ -10,6 +10,9 @@ export default function Argentina() {
   const downloadButtonRef = useRef<HTMLButtonElement>(null);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState(
+    "Initializing Camera...",
+  );
 
   let mediaRecorder: MediaRecorder;
   let downloadUrl: string;
@@ -18,14 +21,20 @@ export default function Argentina() {
     async function init() {
       if (!canvasRef.current) return;
 
+      setLoadingMessage("Connecting to Camera Kit...");
+
       const cameraKit = await bootstrapCameraKit({
         apiToken:
           "eyJhbGciOiJIUzI1NiIsImtpZCI6IkNhbnZhc1MyU0hNQUNQcm9kIiwidHlwIjoiSldUIn0.eyJhdWQiOiJjYW52YXMtY2FudmFzYXBpIiwiaXNzIjoiY2FudmFzLXMyc3Rva2VuIiwibmJmIjoxNzY5NTgyMDAyLCJzdWIiOiJlMDM2NWQ4Yi02ZTcxLTRlMDUtYjgzOS1jNmM3NmNjMGU5N2F-U1RBR0lOR34zNjk5YWM0Ni1jOTY4LTQ3N2YtYTFiMy1mZTllZTQ4ZGY4YTMifQ.UdRL83ZsDDFR8QY_qsYKzL6MkCoWbhkksXXrxreyS0s",
       });
 
+      setLoadingMessage("Starting camera session...");
+
       const session = await cameraKit.createSession({
         liveRenderTarget: canvasRef.current,
       });
+
+      setLoadingMessage("Requesting camera access...");
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -41,17 +50,25 @@ export default function Argentina() {
       await session.setSource(source);
       await session.play();
 
+      setLoadingMessage("Loading AR lenses...");
+
       const { lenses } = await cameraKit.lensRepository.loadLensGroups([
         "017e1e0c-bddb-4281-9e00-5f3e542f45a7",
       ]);
 
       if (!lenses || lenses.length === 0) {
         console.error("No lenses found in the group");
-        setIsLoading(false);
+        setLoadingMessage("Error: No lenses found");
         return;
       }
 
-      session.applyLens(lenses[1]); // Using second lens for Argentina
+      console.log("Available lenses:", lenses);
+      console.log("Applying lens:", lenses[1]);
+
+      setLoadingMessage("Applying filter...");
+
+      await session.applyLens(lenses[1]); // Using second lens for Argentina
+
       setIsLoading(false);
 
       bindRecorder();
@@ -132,12 +149,15 @@ export default function Argentina() {
           style={{
             position: "absolute",
             color: "white",
-            fontSize: "18px",
+            fontSize: "16px",
             textAlign: "center",
             zIndex: 100,
+            background: "rgba(0,0,0,0.8)",
+            padding: "20px",
+            borderRadius: "10px",
           }}
         >
-          Loading Camera Kit...
+          {loadingMessage}
         </div>
       )}
 
