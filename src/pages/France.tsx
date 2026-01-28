@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import { useEffect, useRef } from "react";
 import { bootstrapCameraKit, createMediaStreamSource } from "@snap/camera-kit";
 
