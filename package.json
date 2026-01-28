@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "typescript": "~5.9.3",
     "vite": "^7.2.4"
@@ -16,6 +18,8 @@
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.32",
     "@snap/camera-kit": "^1.13.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-router-dom": "^7.13.0"
   }
 }
