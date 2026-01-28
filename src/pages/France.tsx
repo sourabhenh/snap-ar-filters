@@ -12,6 +12,7 @@ export default function France() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [cameraStarted, setCameraStarted] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   let mediaRecorder: MediaRecorder;
   let downloadUrl: string;
@@ -21,6 +22,7 @@ export default function France() {
 
     setCameraStarted(true);
     setIsLoading(true);
+    setLoadingProgress(0);
     setLoadingMessage("Connecting to Camera Kit...");
 
     try {
@@ -29,26 +31,7 @@ export default function France() {
           "eyJhbGciOiJIUzI1NiIsImtpZCI6IkNhbnZhc1MyU0hNQUNQcm9kIiwidHlwIjoiSldUIn0.eyJhdWQiOiJjYW52YXMtY2FudmFzYXBpIiwiaXNzIjoiY2FudmFzLXMyc3Rva2VuIiwibmJmIjoxNzY5NTgyMDAyLCJzdWIiOiJlMDM2NWQ4Yi02ZTcxLTRlMDUtYjgzOS1jNmM3NmNjMGU5N2F-U1RBR0lOR34zNjk5YWM0Ni1jOTY4LTQ3N2YtYTFiMy1mZTllZTQ4ZGY4YTMifQ.UdRL83ZsDDFR8QY_qsYKzL6MkCoWbhkksXXrxreyS0s",
       });
 
-      setLoadingMessage("Starting camera session...");
-
-      const session = await cameraKit.createSession({
-        liveRenderTarget: canvasRef.current,
-      });
-
-      setLoadingMessage("Requesting camera access...");
-
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          facingMode: "user",
-          frameRate: { ideal: 30, max: 30 },
-        },
-      });
-
-      await session.setSource(createMediaStreamSource(mediaStream));
-      await session.play();
-
+      setLoadingProgress(20);
       setLoadingMessage("Loading AR lenses...");
 
       const { lenses } = await cameraKit.lensRepository.loadLensGroups([
@@ -62,12 +45,36 @@ export default function France() {
       }
 
       console.log("Available lenses:", lenses);
+
+      setLoadingProgress(40);
+      setLoadingMessage("Starting camera session...");
+
+      const session = await cameraKit.createSession({
+        liveRenderTarget: canvasRef.current,
+      });
+
+      setLoadingProgress(60);
+      setLoadingMessage("Requesting camera access...");
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 480 },
+          height: { ideal: 640 },
+          facingMode: "user",
+          frameRate: { ideal: 30, max: 30 },
+        },
+      });
+
+      await session.setSource(createMediaStreamSource(mediaStream));
+      await session.play();
+
+      setLoadingProgress(80);
+      setLoadingMessage("Applying France filter...");
+
       console.log("Applying lens:", lenses[0]);
-
-      setLoadingMessage("Applying filter...");
-
       await session.applyLens(lenses[0]);
 
+      setLoadingProgress(100);
       setIsLoading(false);
 
       bindRecorder();
@@ -175,17 +182,40 @@ export default function France() {
             background: "rgba(0,0,0,0.8)",
             padding: "20px",
             borderRadius: "10px",
+            maxWidth: "80%",
           }}
         >
-          {loadingMessage}
+          <div>{loadingMessage}</div>
+          <div
+            style={{
+              marginTop: "10px",
+              width: "100%",
+              height: "4px",
+              background: "rgba(255,255,255,0.2)",
+              borderRadius: "2px",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${loadingProgress}%`,
+                height: "100%",
+                background: "#FFFC00",
+                transition: "width 0.3s ease",
+              }}
+            ></div>
+          </div>
+          <div style={{ marginTop: "5px", fontSize: "14px" }}>
+            {loadingProgress}%
+          </div>
         </div>
       )}
 
       <canvas
         ref={canvasRef}
         className="camera-canvas"
-        width="640"
-        height="480"
+        width="480"
+        height="640"
         style={{ display: cameraStarted ? "block" : "none" }}
       ></canvas>
 
