@@ -76,9 +76,6 @@ body {
 /* Camera Canvas */
 .camera-canvas {
   width: 337.5px;
-  height: 600px;
-  max-width: 90vw;
-  max-height: calc(100vh - 200px);
   display: block;
   object-fit: cover;
   border-radius: 10px;
