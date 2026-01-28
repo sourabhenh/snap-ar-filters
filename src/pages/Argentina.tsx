@@ -1,4 +1,3 @@
-// import React from "react";
 import { useEffect, useRef } from "react";
 import { bootstrapCameraKit, createMediaStreamSource } from "@snap/camera-kit";
 
@@ -27,7 +26,11 @@ export default function France() {
       });
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user",
+        },
       });
 
       const source = createMediaStreamSource(mediaStream);
