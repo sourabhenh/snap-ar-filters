@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { bootstrapCameraKit, createMediaStreamSource } from "@snap/camera-kit";
 
 export default function Argentina() {
@@ -9,20 +9,21 @@ export default function Argentina() {
   const stopButtonRef = useRef<HTMLButtonElement>(null);
   const downloadButtonRef = useRef<HTMLButtonElement>(null);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadingMessage, setLoadingMessage] = useState(
-    "Initializing Camera...",
-  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [cameraStarted, setCameraStarted] = useState(false);
 
   let mediaRecorder: MediaRecorder;
   let downloadUrl: string;
 
-  useEffect(() => {
-    async function init() {
-      if (!canvasRef.current) return;
+  async function startCamera() {
+    if (!canvasRef.current) return;
 
-      setLoadingMessage("Connecting to Camera Kit...");
+    setCameraStarted(true);
+    setIsLoading(true);
+    setLoadingMessage("Connecting to Camera Kit...");
 
+    try {
       const cameraKit = await bootstrapCameraKit({
         apiToken:
           "eyJhbGciOiJIUzI1NiIsImtpZCI6IkNhbnZhc1MyU0hNQUNQcm9kIiwidHlwIjoiSldUIn0.eyJhdWQiOiJjYW52YXMtY2FudmFzYXBpIiwiaXNzIjoiY2FudmFzLXMyc3Rva2VuIiwibmJmIjoxNzY5NTgyMDAyLCJzdWIiOiJlMDM2NWQ4Yi02ZTcxLTRlMDUtYjgzOS1jNmM3NmNjMGU5N2F-U1RBR0lOR34zNjk5YWM0Ni1jOTY4LTQ3N2YtYTFiMy1mZTllZTQ4ZGY4YTMifQ.UdRL83ZsDDFR8QY_qsYKzL6MkCoWbhkksXXrxreyS0s",
@@ -72,77 +73,98 @@ export default function Argentina() {
       setIsLoading(false);
 
       bindRecorder();
+    } catch (error) {
+      console.error("Error starting camera:", error);
+      setLoadingMessage("Error: " + error);
+      setIsLoading(false);
     }
+  }
 
-    function bindRecorder() {
-      if (
-        !startButtonRef.current ||
-        !stopButtonRef.current ||
-        !downloadButtonRef.current ||
-        !canvasRef.current ||
-        !videoRef.current ||
-        !videoContainerRef.current
-      )
-        return;
+  function bindRecorder() {
+    if (
+      !startButtonRef.current ||
+      !stopButtonRef.current ||
+      !downloadButtonRef.current ||
+      !canvasRef.current ||
+      !videoRef.current ||
+      !videoContainerRef.current
+    )
+      return;
 
-      const startButton = startButtonRef.current;
-      const stopButton = stopButtonRef.current;
-      const downloadButton = downloadButtonRef.current;
-      const canvas = canvasRef.current;
-      const video = videoRef.current;
-      const videoContainer = videoContainerRef.current;
+    const startButton = startButtonRef.current;
+    const stopButton = stopButtonRef.current;
+    const downloadButton = downloadButtonRef.current;
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+    const videoContainer = videoContainerRef.current;
 
-      startButton.addEventListener("click", () => {
-        startButton.disabled = true;
-        stopButton.disabled = false;
-        downloadButton.disabled = true;
-        videoContainer.style.display = "none";
+    startButton.addEventListener("click", () => {
+      startButton.disabled = true;
+      stopButton.disabled = false;
+      downloadButton.disabled = true;
+      videoContainer.style.display = "none";
 
-        const mediaStream = canvas.captureStream(30);
+      const mediaStream = canvas.captureStream(30);
 
-        mediaRecorder = new MediaRecorder(mediaStream);
-        mediaRecorder.addEventListener("dataavailable", (event) => {
-          if (!event.data.size) {
-            console.warn("No recorded data available");
-            return;
-          }
+      mediaRecorder = new MediaRecorder(mediaStream);
+      mediaRecorder.addEventListener("dataavailable", (event) => {
+        if (!event.data.size) {
+          console.warn("No recorded data available");
+          return;
+        }
 
-          const blob = new Blob([event.data]);
+        const blob = new Blob([event.data]);
 
-          downloadUrl = window.URL.createObjectURL(blob);
-          downloadButton.disabled = false;
+        downloadUrl = window.URL.createObjectURL(blob);
+        downloadButton.disabled = false;
 
-          video.src = downloadUrl;
-          videoContainer.style.display = "block";
-        });
-
-        mediaRecorder.start();
+        video.src = downloadUrl;
+        videoContainer.style.display = "block";
       });
 
-      stopButton.addEventListener("click", () => {
-        startButton.disabled = false;
-        stopButton.disabled = true;
+      mediaRecorder.start();
+    });
 
-        mediaRecorder?.stop();
-      });
+    stopButton.addEventListener("click", () => {
+      startButton.disabled = false;
+      stopButton.disabled = true;
 
-      downloadButton.addEventListener("click", () => {
-        const link = document.createElement("a");
+      mediaRecorder?.stop();
+    });
 
-        link.setAttribute("style", "display: none");
-        link.href = downloadUrl;
-        link.download = "argentina-camera-kit-recording.webm";
-        link.click();
-        link.remove();
-      });
-    }
+    downloadButton.addEventListener("click", () => {
+      const link = document.createElement("a");
 
-    init();
-  }, []);
+      link.setAttribute("style", "display: none");
+      link.href = downloadUrl;
+      link.download = "argentina-camera-kit-recording.webm";
+      link.click();
+      link.remove();
+    });
+  }
 
   return (
     <div className="camera-page">
       <h1 className="page-title">Argentina</h1>
+
+      {!cameraStarted && (
+        <button
+          onClick={startCamera}
+          style={{
+            background: "#FFFC00",
+            color: "#000",
+            padding: "15px 30px",
+            fontSize: "18px",
+            fontWeight: "bold",
+            border: "none",
+            borderRadius: "30px",
+            cursor: "pointer",
+            zIndex: 100,
+          }}
+        >
+          Start Camera
+        </button>
+      )}
 
       {isLoading && (
         <div
@@ -161,7 +183,13 @@ export default function Argentina() {
         </div>
       )}
 
-      <canvas ref={canvasRef} className="camera-canvas"></canvas>
+      <canvas
+        ref={canvasRef}
+        className="camera-canvas"
+        width="640"
+        height="480"
+        style={{ display: cameraStarted ? "block" : "none" }}
+      ></canvas>
 
       <div
         ref={videoContainerRef}
@@ -171,7 +199,10 @@ export default function Argentina() {
         <video ref={videoRef} className="video-preview" controls></video>
       </div>
 
-      <div className="controls">
+      <div
+        className="controls"
+        style={{ display: cameraStarted ? "flex" : "none" }}
+      >
         <button ref={startButtonRef} className="btn btn-start">
           Start Recording
         </button>
