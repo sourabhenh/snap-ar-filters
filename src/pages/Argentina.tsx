@@ -120,7 +120,7 @@ export default function France() {
 
   return (
     <div className="camera-page">
-      <h1 className="page-title">Argentina</h1>
+      <h1 className="page-title">Argentina Team</h1>
 
       <canvas ref={canvasRef} className="camera-canvas"></canvas>
 
